@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Germantown Area Chamber of Commerce - Shops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --hunter:#123524; --hunter-dark:#0B241A; --kelly:#3C9F52; --kelly-light:#6FC96C; --kelly-pale:#E8F5E9; --bg:#F4F7F2; --card:#FFFFFF; --ink:#16261E; --ink-soft:#4B5D53; --line:#DCE6DD; --radius:16px; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:var(--bg); color:var(--ink); font-family:'Public Sans',sans-serif; overflow:hidden; -webkit-user-select:none; user-select:none; }
+  #app { display:flex; flex-direction:column; height:100vh; width:100vw; }
+  header { background:var(--hunter); color:white; padding:22px 32px; display:flex; align-items:center; gap:24px; flex-shrink:0; border-bottom:6px solid var(--kelly); }
+  .brand { font-family:'Archivo',sans-serif; font-weight:800; font-size:26px; letter-spacing:0.5px; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:10px; }
+  .brand .dot { width:12px; height:12px; border-radius:50%; background:var(--kelly-light); }
+  .searchwrap { flex:1; position:relative; }
+  #searchInput { width:100%; font-size:22px; font-family:'Public Sans',sans-serif; padding:14px 20px 14px 52px; border-radius:999px; border:none; outline:none; background:white; color:var(--ink); caret-color:transparent; }
+  .searchicon { position:absolute; left:20px; top:50%; transform:translateY(-50%); width:22px; height:22px; opacity:0.5; pointer-events:none; }
+  .clearbtn { position:absolute; right:10px; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%; border:none; background:var(--bg); color:var(--ink-soft); font-size:20px; display:none; align-items:center; justify-content:center; cursor:pointer; }
+  .homebtn { background:var(--kelly); color:white; border:none; padding:14px 22px; border-radius:999px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:18px; cursor:pointer; white-space:nowrap; }
+  main { flex:1; overflow:hidden; position:relative; }
+  .view { position:absolute; inset:0; overflow-y:auto; padding:32px; display:none; }
+  .view.active { display:block; }
+  .sectionlabel { font-family:'Archivo',sans-serif; font-weight:700; font-size:15px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin:0 0 18px 4px; }
+  .categorygrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
+  .catsign { background:var(--hunter); border:3px solid var(--kelly-light); border-radius:10px; padding:26px 22px; cursor:pointer; position:relative; min-height:120px; display:flex; flex-direction:column; justify-content:center; }
+  .catsign::before,.catsign::after { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:var(--kelly-light); top:10px; }
+  .catsign::before { left:10px; } .catsign::after { right:10px; }
+  .catname { font-family:'Archivo',sans-serif; font-weight:800; font-size:24px; color:white; text-transform:uppercase; letter-spacing:0.5px; line-height:1.15; }
+  .catcount { font-size:15px; color:var(--kelly-light); margin-top:8px; font-weight:600; }
+  .listheader { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .backbtn { background:var(--card); border:2px solid var(--line); color:var(--ink); padding:12px 18px; border-radius:999px; font-weight:700; font-size:16px; cursor:pointer; flex-shrink:0; }
+  .listtitle { font-family:'Archivo',sans-serif; font-weight:800; font-size:28px; color:var(--hunter); text-transform:uppercase; }
+  .letterhead { font-family:'Archivo',sans-serif; font-weight:800; font-size:16px; color:var(--kelly); background:var(--kelly-pale); padding:6px 14px; border-radius:6px; display:inline-block; margin:22px 0 10px 0; }
+  .bizrow { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+  .bizrow:active { background:var(--kelly-pale); }
+  .bizname { font-size:19px; font-weight:600; color:var(--ink); }
+  .bizcat { font-size:14px; color:var(--ink-soft); margin-top:2px; }
+  .bizarrow { font-size:22px; color:var(--kelly); }
+  .emptystate { text-align:center; padding:60px 20px; color:var(--ink-soft); font-size:18px; }
+  .overlay { position:fixed; inset:0; background:rgba(11,36,26,0.55); display:none; align-items:center; justify-content:center; z-index:50; padding:24px; }
+  .overlay.active { display:flex; }
+  .detailcard { background:var(--card); border-radius:var(--radius); padding:34px; max-width:520px; width:100%; max-height:80vh; overflow-y:auto; border-top:8px solid var(--kelly); }
+  .detailname { font-family:'Archivo',sans-serif; font-weight:800; font-size:26px; color:var(--hunter); margin:0 0 4px; }
+  .detailcat { font-size:15px; color:var(--kelly); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:18px; }
+  .detailrow { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--line); font-size:17px; }
+  .detailrow:first-of-type { border-top:none; }
+  .detaillabel { color:var(--ink-soft); min-width:90px; font-weight:600; }
+  .closebtn { margin-top:24px; width:100%; padding:16px; background:var(--hunter); color:white; border:none; border-radius:999px; font-weight:700; font-size:18px; cursor:pointer; }
+  #keyboard { position:fixed; left:0; right:0; bottom:0; background:var(--hunter-dark); padding:14px; display:none; z-index:60; border-top:4px solid var(--kelly); }
+  #keyboard.active { display:block; }
+  .kbrow { display:flex; justify-content:center; gap:6px; margin-bottom:6px; }
+  .kbkey { background:#26433380; border:none; color:white; font-family:'Public Sans',sans-serif; font-size:20px; font-weight:600; padding:14px 0; border-radius:8px; cursor:pointer; flex:1; max-width:60px; text-transform:uppercase; }
+  .kbkey.wide { max-width:140px; } .kbkey.space { max-width:none; flex:3; } .kbkey.done { background:var(--kelly); max-width:100px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand" onclick="goHome()"><span class="dot"></span>Shops</div>
+    <div class="searchwrap">
+      <svg class="searchicon" viewBox="0 0 24 24" fill="none" stroke="#123524" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="Search for a business" readonly onclick="openKeyboard()">
+      <button class="clearbtn" id="clearBtn" onclick="clearSearch()">&times;</button>
+    </div>
+    <button class="homebtn" onclick="goHome()">Home</button>
+  </header>
+  <main>
+    <div class="view active" id="view-home">
+      <div class="sectionlabel">Browse by category</div>
+      <div class="categorygrid" id="categoryGrid"></div>
+    </div>
+    <div class="view" id="view-list">
+      <div class="listheader">
+        <button class="backbtn" onclick="goHome()">&larr; Back</button>
+        <div class="listtitle" id="listTitle"></div>
+      </div>
+      <div id="listContent"></div>
+    </div>
+  </main>
+  <div class="overlay" id="detailOverlay" onclick="if(event.target===this) closeDetail()">
+    <div class="detailcard" id="detailCard"></div>
+  </div>
+  <div id="keyboard">
+    <div class="kbrow" id="kbrow1"></div>
+    <div class="kbrow" id="kbrow2"></div>
+    <div class="kbrow" id="kbrow3"></div>
+    <div class="kbrow" id="kbrow4"></div>
+    <div class="kbrow">
+      <button class="kbkey space" onclick="kbType(' ')">space</button>
+      <button class="kbkey wide" onclick="kbBackspace()">delete</button>
+      <button class="kbkey done" onclick="closeKeyboard()">done</button>
+    </div>
+  </div>
+</div>
+<script>
+var DATA = {"categories":["Education & Childcare","Fitness & Wellness","Home & Garden Services","Hotels, Travel & Events","Retail & Shopping"],"businesses":[{"id":"b3","name":"901 Aesthetics","category":"Fitness & Wellness","subcategory":"Aesthetics","address":"9057 Valley Crest Lane, Suite 101","phone":"(901) 221-1256"},{"id":"b4","name":"901 Aesthetics","category":"Fitness & Wellness","subcategory":"Spa & Laser Services","address":"9057 Valley Crest Lane, Suite 101","phone":"(901) 221-1256"},{"id":"b9","name":"Advanced Landscape, LLC","category":"Home & Garden Services","subcategory":"Landscape - Design & Maintenance","address":"1779 Kirby Pkwy. #1-529","phone":"(901) 246-8436"},{"id":"b18","name":"All-State Pest and Lawn","category":"Home & Garden Services","subcategory":"Pest  Control","address":"1220 Vermeer Cv.","phone":"(901) 757-9111"},{"id":"b19","name":"Alpha Wildlife Memphis","category":"Home & Garden Services","subcategory":"Pest  Control","address":"9040 Garden Arbor Dr, Suite 201","phone":"(901) 305-4577"},{"id":"b24","name":"Ashley Brewer Interiors, LLC","category":"Home & Garden Services","subcategory":"Interior Design","address":"9169 Greenbrier Cove","phone":"(870) 514-5055"},{"id":"b29","name":"Balade Travel","category":"Hotels, Travel & Events","subcategory":"Travel Agency","address":"","phone":"(901) 456-5685"},{"id":"b41","name":"Be Still Health and Wellness Spa","category":"Fitness & Wellness","subcategory":"Health & Wellness Development","address":"9087 Poplar Ave. #107","phone":"(901) 236-7800"},{"id":"b43","name":"Set the Stage - Bluff City East","category":"Home & Garden Services","subcategory":"Home & Corporate Stager","address":"2175 Business Center Drive, Suite 8","phone":"(901) 799-8504"},{"id":"b48","name":"Best Care Plumbing, Heating & Air","category":"Home & Garden Services","subcategory":"Air Conditioning & Heating","address":"1747 Bartlett Rd","phone":"(901) 624-1401"},{"id":"b52","name":"Big League Movers, Inc.","category":"Home & Garden Services","subcategory":"Moving & Storage","address":"4660 Distriplex Dr. W.","phone":"(901) 671-1123"},{"id":"b57","name":"Bob Richards Jewelers","category":"Retail & Shopping","subcategory":"Jewelers","address":"1696 S. Germantown Rd","phone":"(901) 751-8052"},{"id":"b58","name":"Bodine School","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"2432 Yester Oaks Dr.","phone":"(901) 754-1800"},{"id":"b62","name":"Briarcrest Christian School System, Inc.","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"76 S. Houston Levee Rd","phone":"(901) 765-4600"},{"id":"b63","name":"BrightView Landscape Services","category":"Home & Garden Services","subcategory":"Landscape - Design & Maintenance","address":"5390 Old Hwy 78","phone":"(901) 301-4796"},{"id":"b68","name":"Buff City Soap, Germantown","category":"Fitness & Wellness","subcategory":"Health & Beauty","address":"1730 S Germantown Rd #121","phone":"(901) 440-8900"},{"id":"b70","name":"C & B Linen","category":"Retail & Shopping","subcategory":"Linens","address":"953 Andrew Jackson Dr","phone":"(901) 606-7101"},{"id":"b106","name":"Cindy Udell Interiors","category":"Home & Garden Services","subcategory":"Interior Design","address":"8453 Tilden Court","phone":"(901) 734-8800"},{"id":"b113","name":"Club Pilates - Collierville","category":"Fitness & Wellness","subcategory":"Fitness - Exercise Clubs & Classes","address":"3660 South Houston Levee Rd, Suite 108","phone":"(901) 255-0606"},{"id":"b114","name":"Club Pilates - East Memphis","category":"Fitness & Wellness","subcategory":"Fitness - Exercise Clubs & Classes","address":"6300 Poplar Ave., Suite 103","phone":"(901) 646-5054"},{"id":"b117","name":"Comfortable LLC","category":"Home & Garden Services","subcategory":"Air Conditioning & Heating","address":"2277 West St.","phone":"(901) 262-5931"},{"id":"b120","name":"Concord Academy","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"4942 Walnut Grove Rd","phone":"(901) 682-3115"},{"id":"b127","name":"Cornerstone Learning Center Southwind","category":"Education & Childcare","subcategory":"Childcare","address":"8180 Sedgwick Way","phone":"(901) 672-8787"},{"id":"b129","name":"Courtyard by Marriott Memphis-Germantown","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"7750 Wolf River Blvd.","phone":"(901) 751-0230"},{"id":"b131","name":"Crowe Services","category":"Home & Garden Services","subcategory":"Air Conditioning & Heating","address":"6391 Ferrell Dr","phone":"(901) 413-5361"},{"id":"b144","name":"Dillard Door & Entrance Control","category":"Home & Garden Services","subcategory":"Security Systems & Products","address":"788 East St.","phone":"(901) 775-2143"},{"id":"b146","name":"Direct Shred","category":"Home & Garden Services","subcategory":"Shredding & Recycling - Mobile","address":"321 Bellvue Street","phone":"(731) 418-0208"},{"id":"b160","name":"Elijah Grace, LLC","category":"Hotels, Travel & Events","subcategory":"Event Planner","address":"9245 Poplar Ave PMB 379 STE 5","phone":"(901) 331-6310"},{"id":"b161","name":"Elijah Grace, LLC","category":"Retail & Shopping","subcategory":"Home Decor","address":"9245 Poplar Ave PMB 379 STE 5","phone":"(901) 331-6310"},{"id":"b163","name":"Elizabeth Anne Brown's Performing Arts","category":"Education & Childcare","subcategory":"Dance","address":"7863 Farmington Blvd.","phone":"(901) 754-0024"},{"id":"b165","name":"Evangelical Christian School","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"7600 Macon Rd.","phone":"(901) 754-7217"},{"id":"b167","name":"EXCEED Hormone Specialists","category":"Fitness & Wellness","subcategory":"Health & Wellness Development","address":"7512 Second St.","phone":"(901) 312-7899"},{"id":"b172","name":"Fairfield Inn & Suites by Marriott","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"9320 Poplar Pike","phone":"(901) 757-9100"},{"id":"b199","name":"Gameday Men's Health Memphis","category":"Fitness & Wellness","subcategory":"Health & Wellness Development","address":"5220 Park Ave. Ste 200","phone":"(901) 589-2969"},{"id":"b200","name":"Garden Center Landscape Service","category":"Home & Garden Services","subcategory":"Landscape - Design & Maintenance","address":"374 South Germantown Pkwy","phone":"(901) 568-6215"},{"id":"b205","name":"Germantown Athletic Club","category":"Fitness & Wellness","subcategory":"Fitness - Exercise Clubs & Classes","address":"1801 Exeter","phone":"(901) 757-7370"},{"id":"b206","name":"Germantown Athletic Club","category":"Fitness & Wellness","subcategory":"Fitness - Children","address":"1801 Exeter","phone":"(901) 757-7370"},{"id":"b208","name":"Germantown Charity Horse Show","category":"Hotels, Travel & Events","subcategory":"Horse Show","address":"P.O. Box 38102","phone":"(901) 754-0009"},{"id":"b212","name":"Germantown Community Travel / Sherrill French Travels","category":"Hotels, Travel & Events","subcategory":"Travel Agency","address":"","phone":"(901) 846-9641"},{"id":"b213","name":"Germantown Day Spa","category":"Fitness & Wellness","subcategory":"Spa & Salon","address":"9030 Poplar Pike #104","phone":"(901) 737-2840"},{"id":"b214","name":"Germantown Day Spa","category":"Fitness & Wellness","subcategory":"Hair Salons","address":"9030 Poplar Pike #104","phone":"(901) 737-2840"},{"id":"b221","name":"Germantown Municipal School Board","category":"Education & Childcare","subcategory":"Schools - GMSD Board of Education","address":"3350 S. Forest Hill Rd","phone":"(901) 752-7900"},{"id":"b222","name":"Germantown Municipal School District","category":"Education & Childcare","subcategory":"Schools - Public","address":"3350 S. Forest Hill Rd","phone":"(901) 752-7900"},{"id":"b231","name":"Good Mane Salon","category":"Fitness & Wellness","subcategory":"Hair Salons","address":"2219 S. Germantown Rd.","phone":""},{"id":"b232","name":"Good Winds Landscape and Garden Center","category":"Home & Garden Services","subcategory":"Nursery & Garden Centers","address":"2238 Sunset Road","phone":"(901) 758-1185"},{"id":"b233","name":"The Great Hall & Conference Center","category":"Hotels, Travel & Events","subcategory":"Conference Centers","address":"1900 S. Germantown Rd","phone":"(901) 751-7661"},{"id":"b240","name":"Hampton Inn & Suites Germantown","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"1680 S. Germantown Rd.","phone":"(901) 309-0555"},{"id":"b241","name":"Hand and Stone Massage and Facial Spa","category":"Fitness & Wellness","subcategory":"Spa & Salon","address":"7781 Farmington Blvd., Suite 109","phone":"(901) 686-9191"},{"id":"b243","name":"Herbi-Systems","category":"Home & Garden Services","subcategory":"Lawn Care","address":"2240 Covington Pike","phone":"(901) 382-5296"},{"id":"b247","name":"Hicks Convention Services & Special Events","category":"Hotels, Travel & Events","subcategory":"Rentals-Event/Party","address":"935 Rayner","phone":"(901) 272-1171"},{"id":"b248","name":"Hilton Garden Inn / Home 2 Suites","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"6811 TraVure Drive East","phone":"(901) 567-7717"},{"id":"b251","name":"Holiday Inn Express & Suites","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"7784 Wolf Trail Cv.","phone":"(901) 309-6700"},{"id":"b253","name":"Holliday Flowers & Events","category":"Retail & Shopping","subcategory":"Florists","address":"2316 S. Germantown Road","phone":"(901) 753-2400"},{"id":"b258","name":"Homewood Suites by Hilton - Germantown","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"7855 Wolf River Blvd.","phone":"(901) 751-2500"},{"id":"b266","name":"Ironsmith Fire, LLC","category":"Home & Garden Services","subcategory":"Fire Sprinkler Systems","address":"374 Distribution Pkwy","phone":"(901) 560-4766"},{"id":"b284","name":"Lanigan Worldwide Moving & Warehousing, Inc.","category":"Home & Garden Services","subcategory":"Moving & Storage","address":"1870 Airways Blvd.","phone":"(901) 744-7070"},{"id":"b286","name":"Lawhon Landscape Design & Construction","category":"Home & Garden Services","subcategory":"Landscape - Design & Maintenance","address":"4958 Forest Hill Irene Road","phone":"(901) 754-7474"},{"id":"b292","name":"LinderMD Skin","category":"Fitness & Wellness","subcategory":"Spa & Laser Services","address":"1329 W Poplar Ave, Suite 103","phone":"(901) 563-6800"},{"id":"b293","name":"LinderMD Skin","category":"Fitness & Wellness","subcategory":"Aesthetics","address":"1329 W Poplar Ave, Suite 103","phone":"(901) 563-6800"},{"id":"b296","name":"Little Lemon Art Studio, LLC","category":"Education & Childcare","subcategory":"Art Education","address":"2324 S. Germantown Rd., Floor 2","phone":"(901) 412-1770"},{"id":"b302","name":"Madonna Learning Center / Bluff City Toffee","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"7007 Poplar Avenue","phone":"(901) 752-5767"},{"id":"b304","name":"Magnolia Plumbing Company","category":"Home & Garden Services","subcategory":"Plumbing - Repairs","address":"8570 Cordes Circle, #11","phone":"(901) 538-8000"},{"id":"b309","name":"Mary Kay, Inc.- Sharon Carney-Wright","category":"Fitness & Wellness","subcategory":"Cosmetics","address":"2886 Elm Ridge Cove","phone":"(901) 489-9697"},{"id":"b317","name":"Memphis Brow Girl & Medical Spa","category":"Fitness & Wellness","subcategory":"Eyebrows","address":"9947 Wolf River Blvd, Suite 115","phone":"(901) 489-5558"},{"id":"b318","name":"Memphis Brow Girl & Medical Spa","category":"Fitness & Wellness","subcategory":"Health & Beauty","address":"9947 Wolf River Blvd, Suite 115","phone":"(901) 489-5558"},{"id":"b327","name":"Memphis Oral School for the Deaf","category":"Education & Childcare","subcategory":"Schools - Private/Hearing Impaired","address":"7901 Poplar Ave","phone":"(901) 758-2228"},{"id":"b332","name":"Memphis University School","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"6191 Park Ave","phone":"(901) 260-1304"},{"id":"b333","name":"Menzaman Jewelry","category":"Retail & Shopping","subcategory":"Jewelry","address":"","phone":"(901) 443-6723"},{"id":"b341","name":"Mid-South Turf Professionals","category":"Home & Garden Services","subcategory":"Weed Control & Fertilization","address":"195 Bowers Road","phone":"(901) 494-9088"},{"id":"b342","name":"Mid-South Turf Professionals","category":"Home & Garden Services","subcategory":"Pest  Control","address":"195 Bowers Road","phone":"(901) 494-9088"},{"id":"b343","name":"MillerKnoll","category":"Retail & Shopping","subcategory":"Furniture & Interior Design","address":"","phone":"(901) 240-3371"},{"id":"b344","name":"Millstone Market and Nursery","category":"Home & Garden Services","subcategory":"Nursery & Garden Centers","address":"6993 Poplar Ave.","phone":"(901) 730-1183"},{"id":"b346","name":"Monkee's of Germantown","category":"Retail & Shopping","subcategory":"Clothing - Ladies","address":"1730 S. Germantown Rd., Suite 112","phone":"(901) 305-2836"},{"id":"b348","name":"More Than Closets","category":"Home & Garden Services","subcategory":"Closet and Home Organization Services","address":"7730 B Trinity Rd., #124","phone":"(901) 270-5379"},{"id":"b349","name":"More Than Closets","category":"Home & Garden Services","subcategory":"Professional Organizers","address":"7730 B Trinity Rd., #124","phone":"(901) 270-5379"},{"id":"b350","name":"My Town Movers","category":"Home & Garden Services","subcategory":"Moving & Storage","address":"449 Hwy 72, Ste. 129","phone":"(901) 896-8696"},{"id":"b360","name":"Ogden Pools","category":"Home & Garden Services","subcategory":"Pools, Spas, Water Gardens, Supplies","address":"2095 Exeter Rd, Suite 80","phone":"(901) 794-4764"},{"id":"b361","name":"Optimize U","category":"Fitness & Wellness","subcategory":"Health & Wellness Development","address":"7511 Capital Drive","phone":"(901) 303-0503"},{"id":"b363","name":"Organized Advantage","category":"Home & Garden Services","subcategory":"Professional Organizers","address":"1578 Dogwood Creek Road","phone":"(901) 351-2161"},{"id":"b386","name":"Our Lady of Perpetual Help School","category":"Education & Childcare","subcategory":"Schools - Private/Independent","address":"8151 Poplar Ave","phone":"(901) 753-1181"},{"id":"b405","name":"Perkins-Everitt Lighting & Controls","category":"Home & Garden Services","subcategory":"Interior Design","address":"5605 Murray Ave.","phone":"(901) 509-4443"},{"id":"b411","name":"Pike & West","category":"Hotels, Travel & Events","subcategory":"Event Center","address":"2277 West Street","phone":"(901) 206-5575"},{"id":"b416","name":"Planet Fitness","category":"Fitness & Wellness","subcategory":"Fitness - Exercise Clubs & Classes","address":"2005 Exeter Road","phone":"(901) 467-2200"},{"id":"b418","name":"Platinum Jewelers","category":"Retail & Shopping","subcategory":"Jewelers","address":"9387 Poplar Ave","phone":"(901) 907-0626"},{"id":"b423","name":"Primrose School of Memphis at Germantown","category":"Education & Childcare","subcategory":"Childcare","address":"8722 Winchester Road","phone":"(901) 707-7181"},{"id":"b429","name":"Pro Health Clinic","category":"Fitness & Wellness","subcategory":"Weight Management","address":"7910 Wolf River Blvd.","phone":"(901) 417-6551"},{"id":"b431","name":"Professional Smile Aesthetics","category":"Fitness & Wellness","subcategory":"Health & Beauty","address":"3100 Professional Plaza Drive","phone":"(901) 295-2995"},{"id":"b436","name":"Pure Perfection Pros","category":"Home & Garden Services","subcategory":"Cleaning & Janitorial","address":"PO Box 381524","phone":"(901) 481-6015"},{"id":"b445","name":"Residence Inn","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"9314 Poplar Pike","phone":"(901) 752-0900"},{"id":"b458","name":"Saddle Creek","category":"Retail & Shopping","subcategory":"Shopping Centers","address":"7509 Poplar Ave, # 1","phone":"(901) 753-4264"},{"id":"b459","name":"Safe-Dry Carpet Cleaning of Germantown","category":"Home & Garden Services","subcategory":"Carpet, Rug & Upholstery","address":"PMB 105, 9245 Poplar Ave. STE 5","phone":"(901) 530-8370"},{"id":"b471","name":"ServiceMaster by Cornerstone","category":"Home & Garden Services","subcategory":"Mold Remediation","address":"9575 Macon Rd.","phone":"(901) 624-9200"},{"id":"b474","name":"Shelby Literacy Center","category":"Education & Childcare","subcategory":"Educational Services","address":"9315 E Shelby Dr.","phone":"(901) 854-0288"},{"id":"b476","name":"Shops of Forest Hill","category":"Retail & Shopping","subcategory":"Shopping Centers","address":"9155 US Highway 72","phone":"(901) 937-3995"},{"id":"b481","name":"SkyCop, Inc.","category":"Home & Garden Services","subcategory":"Security Systems & Products","address":"3736 Getwell Cv.","phone":"(901) 288-5388"},{"id":"b484","name":"Smith's Plumbing Services, Inc","category":"Home & Garden Services","subcategory":"Plumbing - Repairs","address":"10545 Hwy 64 #102","phone":"(901) 238-5000"},{"id":"b487","name":"Solo Landscape, LLC","category":"Home & Garden Services","subcategory":"Landscape - Design & Maintenance","address":"6933 Redfield Dr.","phone":"(901) 282-7918"},{"id":"b489","name":"Southern Avenue Company","category":"Retail & Shopping","subcategory":"Jewelry","address":"7545 North Street","phone":"(901) 207-6407"},{"id":"b490","name":"Southern Screens, Inc","category":"Home & Garden Services","subcategory":"Screens - Retractable","address":"6365 Ferrell Dr.","phone":"(901) 758-2121"},{"id":"b492","name":"Southland Casino Hotel","category":"Hotels, Travel & Events","subcategory":"Casino","address":"1550 N. Ingram Blvd.","phone":"(800) 467-6182"},{"id":"b500","name":"StoneCrest Investments","category":"Retail & Shopping","subcategory":"Shopping Center Developer","address":"9037 Poplar Ave. #104","phone":"(901) 751-5411"},{"id":"b505","name":"Storytellers","category":"Hotels, Travel & Events","subcategory":"Travel Agency","address":"9330 Poplar Pike, Suite 102","phone":"(901) 686-3956"},{"id":"b507","name":"Stringer's Poplar Pointe Garden Center","category":"Home & Garden Services","subcategory":"Nursery & Garden Centers","address":"9495 Poplar Avenue","phone":"(901) 754-5700"},{"id":"b513","name":"Tankersley Plumbing","category":"Home & Garden Services","subcategory":"Plumbing - Repairs","address":"6515 Goodman Rd #4 Box 251","phone":"(901) 282-6989"},{"id":"b514","name":"TCAT Memphis","category":"Education & Childcare","subcategory":"Colleges & Universities","address":"550 Alabama Avenue","phone":"(901) 543-6156"},{"id":"b519","name":"Terri Hannah Home & Garden","category":"Retail & Shopping","subcategory":"Gifts","address":"2110 Merchants Row,  Suite 1","phone":"(901) 257-2965"},{"id":"b531","name":"The Junk Llamas","category":"Home & Garden Services","subcategory":"Junk Hauling","address":"8255 Macon Rd., PO Box 204","phone":"(901) 504-6566"},{"id":"b532","name":"The Learning Experience Germantown","category":"Education & Childcare","subcategory":"Childcare","address":"3750 S Forest Hill Irene Rd.","phone":"(901) 203-7960"},{"id":"b535","name":"The MOD Company","category":"Home & Garden Services","subcategory":"Professional Organizers","address":"3754 Northwood Dr.","phone":"(901) 295-9127"},{"id":"b539","name":"The Shops at Carriage Crossing","category":"Retail & Shopping","subcategory":"Shopping Centers","address":"4674 Merchants Park Circle","phone":"(901) 854-8240"},{"id":"b543","name":"The UPS Store - Poplar","category":"Hotels, Travel & Events","subcategory":"Trade Show Exhibits & Special Events","address":"9245 Poplar Ave, Ste 5","phone":"(901) 624-9701"},{"id":"b549","name":"Tim Ferguson Plumbing, Air & Electric","category":"Home & Garden Services","subcategory":"Plumbing - Repairs","address":"1210 Midas Cove, Suite","phone":"(901) 877-7778"},{"id":"b550","name":"Tim Ferguson Plumbing, Air & Electric","category":"Home & Garden Services","subcategory":"Air Conditioning & Heating","address":"1210 Midas Cove, Suite","phone":"(901) 877-7778"},{"id":"b553","name":"TownePlace Suites Germantown","category":"Hotels, Travel & Events","subcategory":"Hotels & Lodging","address":"7800 Neshoba Rd.","phone":"(901) 759-7995"},{"id":"b557","name":"Uniform Masters","category":"Retail & Shopping","subcategory":"Uniforms","address":"3276 Democrat Rd., #1","phone":"(901) 363-4841"},{"id":"b558","name":"Union University- Germantown","category":"Education & Childcare","subcategory":"Colleges & Universities","address":"2745 Hacks Cross Road","phone":"(901) 312-1920"},{"id":"b563","name":"VIO Med Spa","category":"Fitness & Wellness","subcategory":"Aesthetics","address":"7615 W. Farmington Blvd., Ste 12","phone":"(901) 401-9190"},{"id":"b573","name":"Waste Pro USA","category":"Home & Garden Services","subcategory":"Waste Management","address":"2187 Stateline Road West","phone":"(901) 236-0660"},{"id":"b588","name":"Younger You IV Lounge & Medspa","category":"Fitness & Wellness","subcategory":"Cosmetics","address":"9301 Poplar Ave Suite B","phone":"(901) 584-8165"}]};
+
+function showView(id) {
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+  document.getElementById(id).classList.add("active");
+}
+function goHome() { clearSearch(); showView("view-home"); renderHome(); }
+function renderHome() {
+  var grid = document.getElementById("categoryGrid");
+  grid.innerHTML = "";
+  DATA.categories.forEach(function(cat) {
+    var count = DATA.businesses.filter(function(b){ return b.category === cat; }).length;
+    var tile = document.createElement("div");
+    tile.className = "catsign";
+    tile.onclick = function() { openCategory(cat); };
+    tile.innerHTML = '<div class="catname">' + escapeHtml(cat) + '</div><div class="catcount">' + count + " listing" + (count === 1 ? "" : "s") + "</div>";
+    grid.appendChild(tile);
+  });
+}
+function openCategory(cat) {
+  document.getElementById("listTitle").textContent = cat;
+  var items = DATA.businesses.filter(function(b){ return b.category === cat; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  renderAlphaList(items);
+  showView("view-list");
+}
+function renderAlphaList(items) {
+  var content = document.getElementById("listContent");
+  content.innerHTML = "";
+  if (items.length === 0) { content.innerHTML = '<div class="emptystate">No listings yet in this category.</div>'; return; }
+  var lastLetter = "";
+  items.forEach(function(biz) {
+    var letter = biz.name[0].toUpperCase();
+    if (letter !== lastLetter) {
+      var head = document.createElement("div");
+      head.className = "letterhead"; head.textContent = letter;
+      content.appendChild(head); lastLetter = letter;
+    }
+    var row = document.createElement("div");
+    row.className = "bizrow";
+    row.onclick = function() { openDetail(biz); };
+    row.innerHTML = '<div><div class="bizname">' + escapeHtml(biz.name) + '</div><div class="bizcat">' + escapeHtml(biz.subcategory || biz.category) + '</div></div><div class="bizarrow">&rsaquo;</div>';
+    content.appendChild(row);
+  });
+}
+function openDetail(biz) {
+  var card = document.getElementById("detailCard");
+  card.innerHTML = '<div class="detailname">' + escapeHtml(biz.name) + '</div>' +
+    '<div class="detailcat">' + escapeHtml(biz.subcategory || biz.category) + '</div>' +
+    (biz.address ? ('<div class="detailrow" style="border-top:none;"><span class="detaillabel">Address</span><span>' + escapeHtml(biz.address) + '</span></div>') : '<div class="detailrow" style="border-top:none;color:var(--ink-soft);">No address on file</div>') +
+    (biz.phone ? ('<div class="detailrow"><span class="detaillabel">Phone</span><span>' + escapeHtml(biz.phone) + '</span></div>') : '') +
+    '<button class="closebtn" onclick="closeDetail()">Close</button>';
+  document.getElementById("detailOverlay").classList.add("active");
+}
+function closeDetail() { document.getElementById("detailOverlay").classList.remove("active"); }
+function doSearch(query) {
+  var q = query.trim().toLowerCase();
+  document.getElementById("clearBtn").style.display = q ? "flex" : "none";
+  if (!q) { goHome(); return; }
+  document.getElementById("listTitle").textContent = "Search results";
+  var items = DATA.businesses.filter(function(b){
+    return b.name.toLowerCase().indexOf(q) !== -1 || b.category.toLowerCase().indexOf(q) !== -1 || (b.subcategory||"").toLowerCase().indexOf(q) !== -1;
+  }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  renderAlphaList(items);
+  showView("view-list");
+}
+function clearSearch() { document.getElementById("searchInput").value = ""; }
+var kbRows = ["1234567890","qwertyuiop","asdfghjkl","zxcvbnm"];
+(function buildKeyboard() {
+  kbRows.forEach(function(row, i) {
+    var el = document.getElementById("kbrow" + (i+1));
+    el.innerHTML = row.split("").map(function(ch) { return '<button class="kbkey" onclick="kbType(&quot;' + ch + '&quot;)">' + ch + "</button>"; }).join("");
+  });
+})();
+var kbTargetInput = null;
+function openKeyboard() { kbTargetInput = document.getElementById("searchInput"); document.getElementById("keyboard").classList.add("active"); }
+function closeKeyboard() { document.getElementById("keyboard").classList.remove("active"); }
+function kbType(ch) { if (!kbTargetInput) return; kbTargetInput.value += ch; doSearch(kbTargetInput.value); }
+function kbBackspace() { if (!kbTargetInput) return; kbTargetInput.value = kbTargetInput.value.slice(0,-1); doSearch(kbTargetInput.value); }
+function escapeHtml(str) { var d = document.createElement("div"); d.textContent = str == null ? "" : str; return d.innerHTML; }
+
+renderHome();
+</script>
+</body>
+</html>
